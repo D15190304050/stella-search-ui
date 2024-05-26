@@ -22,7 +22,7 @@ const Authenticated = ({ children }) =>
         (
             async () =>
             {
-                // Do nothing if
+                // Do nothing if the user has logged in.
                 if (hasLoggedIn)
                     return;
 
