@@ -1,0 +1,33 @@
+.wrap-container {
+    height: 100vh;
+    background-image: url("/src/assets/Login\ Background.svg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+    position: relative;
+
+    // Half-transparent white background.
+    .white-background {
+        width: 95vw;
+        height: 90vh;
+        background-color: white;
+        opacity: 0.6;
+        margin: 5vh auto;
+        border-radius: 20px;
+        background-repeat: no-repeat;
+        background-position: left;
+        background-size: 50%;
+
+        .image-background {
+            padding-top: 20vh;
+            padding-left: 10vw;
+        }
+    }
+
+    // Login box on the right. Not transparent.
+    .login-wrap {
+        position: absolute;
+        top: 20vh;
+        right: 200px;
+    }
+}
