@@ -8,6 +8,7 @@ import {Dispatch} from "redux";
 import {NavigateFunction} from "react-router/dist/lib/hooks";
 import {useNavigate} from "react-router-dom";
 import AuthKeys from "../../constants/AuthKeys.ts";
+import RoutePaths from "../../constants/RoutePaths.ts";
 
 const { Search } = Input;
 const { Header, Content, Footer } = Layout;
@@ -30,6 +31,10 @@ const GlobalLayout = ({children}) => {
         },
         {
             key: "2",
+            label: "Video submission",
+        },
+        {
+            key: "10",
             label: "Log out",
         }
     ];
@@ -38,10 +43,10 @@ const GlobalLayout = ({children}) => {
     {
         switch (key)
         {
-            case "1":
-                message.info(`Click on item ${key}`);
-                break;
             case "2":
+                navigate(RoutePaths.VideoSubmission);
+                break;
+            case "10":
                 logout(dispatch);
                 navigate(AuthKeys.LoginUrl);
                 break;
