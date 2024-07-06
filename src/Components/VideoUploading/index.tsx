@@ -74,7 +74,7 @@ const customUpload = async (options) =>
         const formData: FormData = new FormData();
 
         formData.append("videoChunk", fileSlices[i], `slice-${i}`);
-        formData.append("videoChunkIndex", i);
+        formData.append("videoChunkIndex", "" + i);
         formData.append("videoUploadingTaskId", taskId);
 
         try
