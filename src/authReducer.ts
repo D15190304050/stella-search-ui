@@ -1,5 +1,8 @@
 const chris = {
-    username: "Chris"
+    id: 2,
+    username: "Chris",
+    nickname: "Chris",
+    avatarUrl: "http://xxx.jpg"
 }
 
 const initialState = {

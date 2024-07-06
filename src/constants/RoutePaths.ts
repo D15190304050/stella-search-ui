@@ -1,7 +1,8 @@
 const RoutePaths =
 {
     Home: "/",
-    VideoSubmission: "/submission"
+    VideoManagement: "/management",
+    VideoUploading: "/upload",
 };
 
 export default RoutePaths;

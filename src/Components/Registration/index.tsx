@@ -15,7 +15,7 @@ import {
 import { PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import {useEffect, useState} from 'react';
 import "./index.scss"
-import axiosWithInterceptor from "../../axios/axios.jsx";
+import axiosWithInterceptor, {jsonHeader} from "../../axios/axios.jsx";
 import {useNavigate} from "react-router-dom";
 import Cookies from "universal-cookie";
 import AuthKeys from "../../constants/AuthKeys.ts";
@@ -61,7 +61,7 @@ const getBase64 = (img, callback) => {
     reader.readAsDataURL(img);
 };
 
-const beforeUpload = (file) => {
+const beforeUploadAvatar = (file) => {
     // console.log("file =", file);
 
     const fileType = file.type;
@@ -121,8 +121,7 @@ const Registration = () => {
         values.avatarUrl = values.avatarUrl.file.response.data;
         const formData = {...values, captchaId: captchaId};
 
-        axiosWithInterceptor.post("/api/account/register", formData,
-            {headers: {"Content-Type": "application/json"}})
+        axiosWithInterceptor.post("/api/account/register", formData, jsonHeader)
             .then(response =>
             {
                 const serviceResponse = response.data;
@@ -212,7 +211,7 @@ const Registration = () => {
                                         className="avatar-uploader"
                                         showUploadList={false}
                                         action={image_uploading_url}
-                                        beforeUpload={beforeUpload}
+                                        beforeUpload={beforeUploadAvatar}
                                         onChange={handleChange}
                                         accept="image/jpeg, image/png"
                                         method={"POST"}

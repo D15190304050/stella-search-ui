@@ -10,6 +10,9 @@ import {useNavigate} from "react-router-dom";
 import AuthKeys from "../../constants/AuthKeys.ts";
 import RoutePaths from "../../constants/RoutePaths.ts";
 
+const ColPush: number = 6;
+const ColSpan: number = 12;
+
 const { Search } = Input;
 const { Header, Content, Footer } = Layout;
 
@@ -31,7 +34,7 @@ const GlobalLayout = ({children}) => {
         },
         {
             key: "2",
-            label: "Video submission",
+            label: "Video uploading",
         },
         {
             key: "10",
@@ -44,7 +47,7 @@ const GlobalLayout = ({children}) => {
         switch (key)
         {
             case "2":
-                navigate(RoutePaths.VideoSubmission);
+                navigate(RoutePaths.VideoManagement);
                 break;
             case "10":
                 logout(dispatch);
@@ -83,20 +86,20 @@ const GlobalLayout = ({children}) => {
                 </Row>
             </Header>
             <Content style={{ padding: '0 48px' }}>
-                <Breadcrumb style={{ margin: '16px 0' }} items={[
-                    {title: "Home"},
-                    {title: "List"},
-                    {title: "App"},
-                ]}/>
                 <div
                     style={{
                         padding: 24,
-                        minHeight: 380,
+                        minHeight: "85vh",
                         background: colorBgContainer,
                         borderRadius: borderRadiusLG,
+
                     }}
                 >
-                    <Authenticated>{children}</Authenticated>
+                    <Row>
+                        <Col push={ColPush} span={ColSpan}>
+                            <Authenticated>{children}</Authenticated>
+                        </Col>
+                    </Row>
                 </div>
             </Content>
             <Footer style={{ textAlign: 'center' }}>
