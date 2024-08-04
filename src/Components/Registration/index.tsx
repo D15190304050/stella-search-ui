@@ -153,8 +153,6 @@ const Registration = () => {
         </Form.Item>
     );
 
-    console.log("viteEnv = ", viteEnv);
-
     const image_uploading_url = viteEnv.VITE_API_URL + "/avatar/upload";
     // const image_uploading_url = "/avatar/upload";
 

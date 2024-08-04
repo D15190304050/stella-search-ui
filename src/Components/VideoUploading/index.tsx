@@ -1,12 +1,15 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {InboxOutlined, LoadingOutlined, PlusOutlined} from '@ant-design/icons';
-import {Divider, Form, GetProp, Input, Select, UploadProps} from 'antd';
+import {Button, Divider, Form, GetProp, Input, Select, Space, Spin, UploadProps} from 'antd';
 import { message, Upload } from 'antd';
 import TextArea from "antd/es/input/TextArea";
 import FileConstants from "../../constants/FileConstants.ts";
 import axiosWithInterceptor, {jsonHeader} from "../../axios/axios.tsx";
 import qs from "qs";
 import {ComposeVideoChunksRequest, NewVideoUploadingTaskRequest} from "../../dtos/VideoInfo.ts";
+import {VideoUploadingOption} from "../../dtos/VideoUploadingOptions.ts";
+
+const viteEnv = import.meta.env;
 
 const { Dragger } = Upload;
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
@@ -26,6 +29,19 @@ const formItemLayout = {
         },
         sm: {
             span: 16,
+        },
+    },
+};
+
+const tailFormItemLayout = {
+    wrapperCol: {
+        xs: {
+            span: 24,
+            offset: 0,
+        },
+        sm: {
+            span: 24,
+            offset: 0,
         },
     },
 };
@@ -82,20 +98,22 @@ const customUpload = async (options) =>
             console.log("formData = ", formData);
             await axiosWithInterceptor.post("/api/video/upload-chunk", formData, {headers: {"Content-Type": "multipart/form-data"}});
 
-            progress = 100 * (i + 1) / fileSlices.length;
+            progress = 100 * i / fileSlices.length;
             onProgress({percent: progress}, file);
         }
         catch (error)
         {
             console.error("Error when uploading video: ", error);
         }
+
+        onProgress({percent: 100}, file);
     }
 
     // Compose video chunks.
     const composeVideoChunksRequest: ComposeVideoChunksRequest = {videoUploadingTaskId: taskId};
     await axiosWithInterceptor.post("/api/video/compose-chunks", composeVideoChunksRequest, jsonHeader);
 
-    console.log("Finished uploading...");
+    // console.log("Finished uploading...");
 };
 
 const dragProps: UploadProps = {
@@ -144,8 +162,9 @@ const getBase64 = (img: FileType, callback: (url: string) => void) => {
 
 const VideoUploading = () =>
 {
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [imageUrl, setImageUrl] = useState<string>();
+    const [videoUploadingOption, setVideoUploadingOption] = useState<VideoUploadingOption | null>(null);
 
     const uploadButton = (
         <button style={{ border: 0, background: 'none' }} type="button">
@@ -173,113 +192,152 @@ const VideoUploading = () =>
         console.log("values = ", values);
     }
 
+    useEffect(() =>
+    {
+        (async () =>
+        {
+            // Get video uploading options.
+            const response = await axiosWithInterceptor.get("/api/video/uploading-options");
+            const videoUploadingOption = response.data.data as VideoUploadingOption;
+            setVideoUploadingOption(videoUploadingOption);
+
+            setLoading(false);
+        })();
+    }, []);
+
     return (
-        <div>
-            <Dragger {...dragProps}>
-                <p className="ant-upload-drag-icon">
-                    <InboxOutlined />
-                </p>
-                <p className="ant-upload-text">Click or drag video file to this area to upload</p>
-                <p className="ant-upload-hint">
-                    Support for a single upload. Strictly prohibited from uploading company data or other
-                    banned files.
-                </p>
-            </Dragger>
-            <Divider/>
-            <Form
-                {...formItemLayout}
-                name="videoUploader"
-                onFinish={onSubmit}
-                scrollToFirstError
-            >
-                <Form.Item
-
-                    label="Cover"
-                    name="coverUrl"
-                    valuePropName="cover"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please upload the cover of your video!',
-                        },
-                    ]}
+        <Spin spinning={loading} size="large" tip="Loading..." delay={500}>
+            <div>
+                <Dragger {...dragProps}>
+                    <p className="ant-upload-drag-icon">
+                        <InboxOutlined/>
+                    </p>
+                    <p className="ant-upload-text">Click or drag video file to this area to upload</p>
+                    <p className="ant-upload-hint">
+                        Support for a single upload. Strictly prohibited from uploading company data or other
+                        banned files.
+                    </p>
+                </Dragger>
+                <Divider/>
+                <Form
+                    {...formItemLayout}
+                    name="videoUploader"
+                    onFinish={onSubmit}
+                    scrollToFirstError
                 >
-                    <Upload
-                        name="coverFile"
-                        listType="picture-card"
-                        className="avatar-uploader"
-                        showUploadList={false}
-                        // action="https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload"
-                        beforeUpload={beforeUploadCover}
-                        onChange={handleChange}
-                        accept="image/jpeg, image/png"
-                        method={"POST"}
+                    <Form.Item
+
+                        label="Cover"
+                        name="coverUrl"
+                        valuePropName="cover"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please upload the cover of your video!',
+                            },
+                        ]}
                     >
-                        {imageUrl ? <img src={imageUrl} alt="Cover" style={{ width: '100%' }} /> : uploadButton}
-                    </Upload>
-                </Form.Item>
+                        <Upload
+                            name="coverFile"
+                            listType="picture-card"
+                            className="avatar-uploader"
+                            showUploadList={false}
+                            action={viteEnv.VITE_API_URL + "/api/video/upload-cover"}
+                            beforeUpload={beforeUploadCover}
+                            onChange={handleChange}
+                            accept="image/jpeg, image/png"
+                            method={"POST"}
+                        >
+                            {imageUrl ? <img src={imageUrl} alt="Cover" style={{width: '100%'}}/> : uploadButton}
+                        </Upload>
+                    </Form.Item>
 
-                <Form.Item
-                    name="title"
-                    label="Title"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please input the title of your video.',
-                        },
-                    ]}
-                >
-                    <Input allowClear/>
-                </Form.Item>
+                    <Form.Item
+                        name="title"
+                        label="Title"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input the title of your video.',
+                            },
+                        ]}
+                    >
+                        <Input allowClear/>
+                    </Form.Item>
 
-                <Form.Item
-                    name="videoType"
-                    label="Video type"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please input the type of your video.',
-                        },
-                    ]}
-                >
-                    <Input allowClear/>
-                </Form.Item>
+                    <Form.Item
+                        name="videoCreationType"
+                        label="Video creation type"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input the type of your video.',
+                            },
+                        ]}
+                    >
+                        <Select options={videoUploadingOption?.creationTypeOptions.map(option =>
+                            ({
+                                label: option.title,
+                                value: option.value
+                            })
+                        )}/>
+                    </Form.Item>
 
-                <Form.Item
-                    name="section"
-                    label="Section"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please input the section of your video.',
-                        },
-                    ]}
-                >
-                    <Select/>
-                </Form.Item>
+                    <Form.Item
+                        name="section"
+                        label="Section"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input the section of your video.',
+                            },
+                        ]}
+                    >
+                        <Select options={videoUploadingOption?.videoSectionOptions.map(option =>
+                            ({
+                                label: option.title,
+                                value: option.value
+                            })
+                        )}/>
+                    </Form.Item>
 
-                <Form.Item
-                    name="labels"
-                    label="Labels"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please input the labels of your video.',
-                        },
-                    ]}
-                >
-                    {/* See tags of antd <Select/> */}
-                    <Select/>
-                </Form.Item>
+                    <Form.Item
+                        name="labels"
+                        label="Labels"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please input the labels of your video.',
+                            },
+                        ]}
+                    >
+                        <Select options={videoUploadingOption?.videoLabelOptions.map(option =>
+                            ({
+                                label: option.title,
+                                value: option.value
+                            })
+                        )}/>
+                    </Form.Item>
 
-                <Form.Item
-                    name="introduction"
-                    label="Introduction"
-                >
-                    <TextArea/>
-                </Form.Item>
-            </Form>
-        </div>
+                    <Form.Item
+                        name="introduction"
+                        label="Introduction"
+                    >
+                        <TextArea/>
+                    </Form.Item>
+
+                    <Form.Item {...tailFormItemLayout}>
+                        <Space>
+                            <Button type="primary" htmlType="submit">
+                                Submit
+                            </Button>
+
+                            <Button htmlType='reset'>Reset</Button>
+                        </Space>
+                    </Form.Item>
+                </Form>
+            </div>
+        </Spin>
     );
 }
 
