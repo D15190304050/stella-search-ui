@@ -8,6 +8,9 @@ import axiosWithInterceptor, {formHeader, jsonHeader} from "../../axios/axios.ts
 import qs from "qs";
 import {ComposeVideoChunksRequest, NewVideoUploadingTaskRequest} from "../../dtos/VideoInfo.ts";
 import {VideoUploadingOption} from "../../dtos/VideoUploadingOptions.ts";
+import {useNavigate} from "react-router-dom";
+import {NavigateFunction} from "react-router/dist/lib/hooks";
+import RoutePaths from "../../constants/RoutePaths.ts";
 
 const { Dragger } = Upload;
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
@@ -84,6 +87,7 @@ const VideoUploading = () =>
     const [videoId, setVideoId] = useState(0);
 
     const [form] = Form.useForm();
+    const navigate: NavigateFunction = useNavigate();
 
     const handleReset = () => {
         form.resetFields();
@@ -135,7 +139,6 @@ const VideoUploading = () =>
 
             try
             {
-                console.log("formData = ", formData);
                 await axiosWithInterceptor.post("/api/video/upload-chunk", formData, formHeader);
 
                 progress = 100 * i / fileSlices.length;
@@ -168,7 +171,7 @@ const VideoUploading = () =>
         onChange(info) {
             const { status } = info.file;
             if (status !== 'uploading') {
-                console.log(info.file, info.fileList);
+                // console.log(info.file, info.fileList);
             }
             if (status === 'done') {
                 message.success(`${info.file.name} file uploaded successfully.`);
@@ -205,8 +208,13 @@ const VideoUploading = () =>
         }
 
         values.coverUrl = videoCoverUrl;
-        values = {...values, videoId: videoId};
-        console.log("values = ", values);
+        const setVideoInfo = {...values, videoId: videoId};
+
+        axiosWithInterceptor.post("/api/video/set-info", setVideoInfo, jsonHeader).then(response =>
+        {
+            message.info("Submitting success, waiting for auditing.")
+                .then(() => navigate(RoutePaths.VideoManagement));
+        });
     }
 
     const uploadVideoCover = async (options) =>
