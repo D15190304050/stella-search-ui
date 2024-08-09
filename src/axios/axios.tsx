@@ -55,7 +55,8 @@ axiosWithInterceptor.interceptors.response.use(
 )
 
 const jsonHeader = {headers: {"Content-Type": "application/json"}};
+const formHeader = {headers: {"Content-Type": "multipart/form-data"}};
 
 export default axiosWithInterceptor;
 
-export {jsonHeader};
+export {jsonHeader, formHeader};

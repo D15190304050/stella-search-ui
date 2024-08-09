@@ -153,8 +153,8 @@ const Registration = () => {
         </Form.Item>
     );
 
-    const image_uploading_url = viteEnv.VITE_API_URL + "/avatar/upload";
-    // const image_uploading_url = "/avatar/upload";
+    const imageUploadingUrl = viteEnv.VITE_API_URL + "/avatar/upload";
+    // const imageUploadingUrl = "/avatar/upload";
 
     const getCaptcha = () =>
     {
@@ -208,7 +208,7 @@ const Registration = () => {
                                         listType="picture-card"
                                         className="avatar-uploader"
                                         showUploadList={false}
-                                        action={image_uploading_url}
+                                        action={imageUploadingUrl}
                                         beforeUpload={beforeUploadAvatar}
                                         onChange={handleChange}
                                         accept="image/jpeg, image/png"

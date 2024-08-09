@@ -4,12 +4,10 @@ import {Button, Divider, Form, GetProp, Input, Select, Space, Spin, UploadProps}
 import { message, Upload } from 'antd';
 import TextArea from "antd/es/input/TextArea";
 import FileConstants from "../../constants/FileConstants.ts";
-import axiosWithInterceptor, {jsonHeader} from "../../axios/axios.tsx";
+import axiosWithInterceptor, {formHeader, jsonHeader} from "../../axios/axios.tsx";
 import qs from "qs";
 import {ComposeVideoChunksRequest, NewVideoUploadingTaskRequest} from "../../dtos/VideoInfo.ts";
 import {VideoUploadingOption} from "../../dtos/VideoUploadingOptions.ts";
-
-const viteEnv = import.meta.env;
 
 const { Dragger } = Upload;
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
@@ -55,89 +53,7 @@ function sliceFile(file, chunkSize: number)
     return slices;
 }
 
-const customUpload = async (options) =>
-{
-    // 在这里实现你的分块上传逻辑
-    // 使用 options.file 获取文件对象，
-    const { file, onSuccess, onError, onProgress } = options;
 
-    console.log("file to upload = ", file);
-    const videoFileName: string = file.name;
-    const lastIndexOfDot: number = videoFileName.lastIndexOf(".");
-    const videoFileExtension: string = videoFileName.substring(lastIndexOfDot);
-
-    const fileSlices = sliceFile(file, FileConstants.DefaultFileChunkSize);
-
-    // Generate video uploading task.
-    const newVideoUploadingTaskRequest: NewVideoUploadingTaskRequest =
-        {
-            videoChunkCount: fileSlices.length,
-            videoFileExtension: videoFileExtension,
-        };
-    const taskIdResponse = await axiosWithInterceptor.get("/api/video/generate-task",
-        {
-            params: newVideoUploadingTaskRequest,
-            paramsSerializer: params => qs.stringify(params)
-        });
-
-    const taskId: string = taskIdResponse.data.data;
-
-    let progress: number = 0;
-
-    // Upload video chunks.
-    for (let i: number = 0; i < fileSlices.length; i++)
-    {
-        const formData: FormData = new FormData();
-
-        formData.append("videoChunk", fileSlices[i], `slice-${i}`);
-        formData.append("videoChunkIndex", "" + i);
-        formData.append("videoUploadingTaskId", taskId);
-
-        try
-        {
-            console.log("formData = ", formData);
-            await axiosWithInterceptor.post("/api/video/upload-chunk", formData, {headers: {"Content-Type": "multipart/form-data"}});
-
-            progress = 100 * i / fileSlices.length;
-            onProgress({percent: progress}, file);
-        }
-        catch (error)
-        {
-            console.error("Error when uploading video: ", error);
-        }
-
-        onProgress({percent: 100}, file);
-    }
-
-    // Compose video chunks.
-    const composeVideoChunksRequest: ComposeVideoChunksRequest = {videoUploadingTaskId: taskId};
-    await axiosWithInterceptor.post("/api/video/compose-chunks", composeVideoChunksRequest, jsonHeader);
-
-    // console.log("Finished uploading...");
-};
-
-const dragProps: UploadProps = {
-    name: 'file',
-    multiple: false,
-    maxCount: 1,
-    customRequest: customUpload,
-    onChange(info) {
-        const { status } = info.file;
-        if (status !== 'uploading') {
-            console.log(info.file, info.fileList);
-        }
-        if (status === 'done') {
-            message.success(`${info.file.name} file uploaded successfully.`);
-        } else if (status === 'error') {
-            message.error(`${info.file.name} file upload failed.`);
-        }
-    },
-    onDrop(e) {
-        console.log('Dropped files', e.dataTransfer.files);
-    },
-    accept: "video/mp4",
-    withCredentials: true
-};
 
 const beforeUploadCover = (file) => {
     // console.log("file =", file);
@@ -163,8 +79,16 @@ const getBase64 = (img: FileType, callback: (url: string) => void) => {
 const VideoUploading = () =>
 {
     const [loading, setLoading] = useState(true);
-    const [imageUrl, setImageUrl] = useState<string>();
+    const [videoCoverUrl, setVideoCoverUrl] = useState<string | null>(null);
     const [videoUploadingOption, setVideoUploadingOption] = useState<VideoUploadingOption | null>(null);
+    const [videoId, setVideoId] = useState(0);
+
+    const [form] = Form.useForm();
+
+    const handleReset = () => {
+        form.resetFields();
+        setVideoCoverUrl(null);
+    };
 
     const uploadButton = (
         <button style={{ border: 0, background: 'none' }} type="button">
@@ -172,6 +96,92 @@ const VideoUploading = () =>
             <div style={{ marginTop: 8 }}>Upload</div>
         </button>
     );
+
+    const uploadVideo = async (options) =>
+    {
+        const { file, onSuccess, onError, onProgress } = options;
+
+        // console.log("file to upload = ", file);
+        const videoFileName: string = file.name;
+        const lastIndexOfDot: number = videoFileName.lastIndexOf(".");
+        const videoFileExtension: string = videoFileName.substring(lastIndexOfDot);
+
+        const fileSlices = sliceFile(file, FileConstants.DefaultFileChunkSize);
+
+        // Generate video uploading task.
+        const newVideoUploadingTaskRequest: NewVideoUploadingTaskRequest =
+            {
+                videoChunkCount: fileSlices.length,
+                videoFileExtension: videoFileExtension,
+            };
+        const taskIdResponse = await axiosWithInterceptor.get("/api/video/generate-task",
+            {
+                params: newVideoUploadingTaskRequest,
+                paramsSerializer: params => qs.stringify(params)
+            });
+
+        const taskId: string = taskIdResponse.data.data;
+
+        let progress: number = 0;
+
+        // Upload video chunks.
+        for (let i: number = 0; i < fileSlices.length; i++)
+        {
+            const formData: FormData = new FormData();
+
+            formData.append("videoChunk", fileSlices[i], `slice-${i}`);
+            formData.append("videoChunkIndex", "" + i);
+            formData.append("videoUploadingTaskId", taskId);
+
+            try
+            {
+                console.log("formData = ", formData);
+                await axiosWithInterceptor.post("/api/video/upload-chunk", formData, formHeader);
+
+                progress = 100 * i / fileSlices.length;
+                onProgress({percent: progress}, file);
+            }
+            catch (error)
+            {
+                console.error("Error when uploading video: ", error);
+            }
+
+            onProgress({percent: 100}, file);
+        }
+
+        // Compose video chunks.
+        const composeVideoChunksRequest: ComposeVideoChunksRequest = {videoUploadingTaskId: taskId};
+        const videoIdResponse = await axiosWithInterceptor.post("/api/video/compose-chunks", composeVideoChunksRequest, jsonHeader);
+
+        const videoId: number = videoIdResponse.data.data;
+        setVideoId(videoId);
+
+        onSuccess();
+        // console.log("Finished uploading...");
+    };
+
+    const dragProps: UploadProps = {
+        name: 'file',
+        multiple: false,
+        maxCount: 1,
+        customRequest: uploadVideo,
+        onChange(info) {
+            const { status } = info.file;
+            if (status !== 'uploading') {
+                console.log(info.file, info.fileList);
+            }
+            if (status === 'done') {
+                message.success(`${info.file.name} file uploaded successfully.`);
+            } else if (status === 'error') {
+                message.error(`${info.file.name} file upload failed.`);
+            }
+        },
+        onDrop(e) {
+            console.log('Dropped files', e.dataTransfer.files);
+        },
+        accept: "video/mp4",
+        withCredentials: true
+    };
 
     const handleChange: UploadProps['onChange'] = (info) => {
         if (info.file.status === 'uploading') {
@@ -182,14 +192,39 @@ const VideoUploading = () =>
             // Get this url from response in real world.
             getBase64(info.file.originFileObj as FileType, (url) => {
                 setLoading(false);
-                setImageUrl(url);
             });
         }
     };
 
     const onSubmit = (values) =>
     {
+        if (videoId === 0)
+        {
+            message.error("You must upload a video before submitting the form.");
+            return;
+        }
+
+        values.coverUrl = videoCoverUrl;
+        values = {...values, videoId: videoId};
         console.log("values = ", values);
+    }
+
+    const uploadVideoCover = async (options) =>
+    {
+        const {file, onSuccess, onError, onProgress} = options;
+
+        const formData: FormData = new FormData();
+        formData.append("coverFile", file);
+
+        const response = await axiosWithInterceptor.post("/api/video/upload-cover", formData, formHeader);
+
+        const videoCoverUrl: string = response.data.data;
+        setVideoCoverUrl(videoCoverUrl);
+        setLoading(false);
+
+        // Done uploading video cover.
+        onProgress({percent: 100}, file);
+        onSuccess();
     }
 
     useEffect(() =>
@@ -221,34 +256,36 @@ const VideoUploading = () =>
                 <Divider/>
                 <Form
                     {...formItemLayout}
+                    form={form}
                     name="videoUploader"
                     onFinish={onSubmit}
                     scrollToFirstError
+                    onReset={handleReset}
                 >
                     <Form.Item
-
                         label="Cover"
                         name="coverUrl"
-                        valuePropName="cover"
+                        valuePropName="fileList"
                         rules={[
                             {
                                 required: true,
                                 message: 'Please upload the cover of your video!',
                             },
                         ]}
+                        getValueFromEvent={({ fileList }) => fileList}
                     >
                         <Upload
                             name="coverFile"
                             listType="picture-card"
                             className="avatar-uploader"
                             showUploadList={false}
-                            action={viteEnv.VITE_API_URL + "/api/video/upload-cover"}
+                            customRequest={uploadVideoCover}
                             beforeUpload={beforeUploadCover}
                             onChange={handleChange}
                             accept="image/jpeg, image/png"
                             method={"POST"}
                         >
-                            {imageUrl ? <img src={imageUrl} alt="Cover" style={{width: '100%'}}/> : uploadButton}
+                            {videoCoverUrl ? <img src={videoCoverUrl} alt="Cover" style={{width: '100%'}}/> : uploadButton}
                         </Upload>
                     </Form.Item>
 
@@ -311,7 +348,10 @@ const VideoUploading = () =>
                             },
                         ]}
                     >
-                        <Select options={videoUploadingOption?.videoLabelOptions.map(option =>
+                        <Select
+                            mode="multiple"
+                            maxCount={5}
+                            options={videoUploadingOption?.videoLabelOptions.map(option =>
                             ({
                                 label: option.title,
                                 value: option.value
@@ -332,7 +372,7 @@ const VideoUploading = () =>
                                 Submit
                             </Button>
 
-                            <Button htmlType='reset'>Reset</Button>
+                            <Button htmlType="reset">Reset</Button>
                         </Space>
                     </Form.Item>
                 </Form>
