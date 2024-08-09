@@ -4,6 +4,10 @@ import {EditOutlined, LikeOutlined, MessageOutlined, StarOutlined} from "@ant-de
 import {useNavigate} from "react-router-dom";
 import {NavigateFunction} from "react-router/dist/lib/hooks";
 import RoutePaths from "../../constants/RoutePaths.ts";
+import axiosWithInterceptor from "../../axios/axios.tsx";
+import {PaginationParam} from "../../dtos/CommonQueryParams.ts";
+import qs from "qs";
+import {VideoInfo} from "../../dtos/VideoInfo.ts";
 
 const ColPush: number = 6;
 const ColSpan: number = 12;
@@ -33,14 +37,33 @@ const VideoManagement = () =>
 {
     const navigate: NavigateFunction = useNavigate();
     const [videoCount, setVideoCount] = useState(25);
+    const [videoInfos, setVideoInfos] = useState<VideoInfo[]>([]);
 
     const jumpToUpload = () =>
     {
         navigate(RoutePaths.VideoUploading);
     }
 
-    const onPageChange = (page: number, pageSize: number) =>
+    const getVideoInfos = async (page: number, pageSize: number) =>
     {
+        const param: PaginationParam =
+            {
+                pageCapacity: pageSize,
+                pageIndex: page,
+            };
+
+        const response = await axiosWithInterceptor.get("/api/video/list", {
+            params: param,
+            paramsSerializer: params => qs.stringify(params)
+        });
+
+        const videoInfos: VideoInfo[] = response.data.data;
+        setVideoInfos(videoInfos);
+    }
+
+    const onPageChange = async (page: number, pageSize: number) =>
+    {
+        await getVideoInfos(page, pageSize);
     }
 
     const onBtEditClick = (id: number) =>
@@ -50,7 +73,14 @@ const VideoManagement = () =>
 
     useEffect(() =>
     {
+        (async () =>
+        {
+            const videoCountResponse = await axiosWithInterceptor.get("/api/video/count");
+            const videoCount = videoCountResponse.data.data;
+            setVideoCount(videoCount);
 
+            await getVideoInfos(1, 10);
+        })();
     }, []);
 
 
@@ -84,23 +114,22 @@ const VideoManagement = () =>
                         // itemLayout="vertical"
                         itemLayout="horizontal"
                         size="large"
-                        dataSource={data}
+                        dataSource={videoInfos}
                         renderItem={(item) => (
                             <List.Item
                                 key={item.title}
                                 actions={[
-                                    <IconText icon={StarOutlined} text={item.starCount + ""} key={"list-star-o-" + item.id} />,
+                                    <IconText icon={StarOutlined} text={item.favoritesCount + ""} key={"list-star-o-" + item.id} />,
                                     <IconText icon={LikeOutlined} text={item.likeCount + ""} key={"list-like-o-" + item.id} />,
                                     <IconText icon={MessageOutlined} text={item.commentCount + ""} key={"list-message-" + item.id} />,
                                     <Button type="primary" icon={<EditOutlined />} onClick={() => onBtEditClick(item.id)} key={"list-bt-edit-" + item.id}>Edit</Button>,
                                 ]}
                             >
                                 <List.Item.Meta
-                                    avatar={<Avatar src={item.avatar} />}
-                                    title={<a href={item.href}>{item.title}</a>}
-                                    description={item.description}
+                                    avatar={<Avatar src={item.coverUrl} />}
+                                    title={<a href={item.videoUrl}>{item.title}</a>}
+                                    description={item.introduction}
                                 />
-                                {item.content}
                             </List.Item>
                         )}
                     />
