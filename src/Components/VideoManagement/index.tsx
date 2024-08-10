@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Avatar, Button, Col, Divider, List, Pagination, Row, Space} from "antd";
 import {EditOutlined, LikeOutlined, MessageOutlined, StarOutlined} from "@ant-design/icons";
-import {useNavigate} from "react-router-dom";
+import {createSearchParams, useNavigate} from "react-router-dom";
 import {NavigateFunction} from "react-router/dist/lib/hooks";
 import RoutePaths from "../../constants/RoutePaths.ts";
 import axiosWithInterceptor from "../../axios/axios.tsx";
@@ -68,7 +68,12 @@ const VideoManagement = () =>
 
     const onBtEditClick = (id: number) =>
     {
-        console.log("item = ", id);
+        const searchParams = createSearchParams({
+            videoId: id.toString(),
+        });
+
+        const destinationUrl: string = RoutePaths.VideoUpdate + "?" + searchParams.toString();
+        navigate(destinationUrl);
     }
 
     useEffect(() =>

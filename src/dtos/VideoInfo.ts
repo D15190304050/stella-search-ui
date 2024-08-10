@@ -12,6 +12,17 @@ interface VideoInfo
     commentCount: number,
 }
 
+interface SetVideoInfoRequest
+{
+    title: string;
+    coverUrl: string;
+    videoCreationType: number;
+    section: number;
+    labels: number[];
+    introduction?: string;
+    videoId: number;
+}
+
 interface NewVideoUploadingTaskRequest
 {
     videoChunkCount: number,
@@ -30,4 +41,4 @@ interface ComposeVideoChunksRequest
     videoUploadingTaskId: string,
 }
 
-export type {VideoInfo, NewVideoUploadingTaskRequest, VideoChunkUploadingRequest, ComposeVideoChunksRequest}
+export type {VideoInfo, SetVideoInfoRequest, NewVideoUploadingTaskRequest, VideoChunkUploadingRequest, ComposeVideoChunksRequest}
