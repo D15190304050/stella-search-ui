@@ -6,6 +6,7 @@ import RoutePaths from "./constants/RoutePaths.ts";
 import VideoManagement from "./Components/VideoManagement";
 import VideoUploading from "./Components/VideoUploading";
 import VideoUpdate from "./Components/VideoUpdate";
+import VideoPlayer from "./Components/VideoPlayer";
 
 function App()
 {
@@ -16,6 +17,7 @@ function App()
                 <Route path={RoutePaths.VideoManagement} element={<VideoManagement/>}/>
                 <Route path={RoutePaths.VideoUploading} element={<VideoUploading/>}/>
                 <Route path={RoutePaths.VideoUpdate} element={<VideoUpdate/>}/>
+                <Route path={RoutePaths.VideoPlayer} element={<VideoPlayer/>}/>
             </Routes>
         </GlobalLayout>
     );
