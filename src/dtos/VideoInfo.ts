@@ -1,15 +1,17 @@
 interface VideoInfo
 {
     id: number,
-    videoUrl: string,
+    nameInOss: string,
     title: string,
     coverUrl: string,
     introduction: string,
-    uploadedTime: Date,
+    creationTime: Date,
+    modificationTime: Date,
     playCount: number,
     favoritesCount: number,
     likeCount: number,
     commentCount: number,
+    videoPlayUrl: string,
 }
 
 interface SetVideoInfoRequest

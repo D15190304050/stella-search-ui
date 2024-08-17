@@ -1,37 +1,18 @@
 import React, {useEffect, useState} from "react";
 import {Avatar, Button, Col, Divider, List, Pagination, Row, Space} from "antd";
-import {EditOutlined, LikeOutlined, MessageOutlined, StarOutlined} from "@ant-design/icons";
-import {createSearchParams, useNavigate} from "react-router-dom";
+import {EditOutlined, LikeOutlined, MessageOutlined, PlayCircleOutlined, StarOutlined} from "@ant-design/icons";
+import {createSearchParams, Link, useNavigate} from "react-router-dom";
 import {NavigateFunction} from "react-router/dist/lib/hooks";
 import RoutePaths from "../../constants/RoutePaths.ts";
 import axiosWithInterceptor from "../../axios/axios.tsx";
 import {PaginationParam} from "../../dtos/CommonQueryParams.ts";
 import qs from "qs";
 import {VideoInfo} from "../../dtos/VideoInfo.ts";
+import RouteQueryParams from "../../constants/RouteQueryParams.ts";
+import IconText from "../IconText";
 
 const ColPush: number = 6;
 const ColSpan: number = 12;
-
-const IconText = ({ icon, text }: { icon: React.FC; text: string }) => (
-    <Space>
-        {React.createElement(icon)}
-        {text}
-    </Space>
-);
-
-const data = Array.from({ length: 3 }).map((_, i) => ({
-    id: i,
-    href: 'https://ant.design',
-    title: `ant design part ${i}`,
-    avatar: `https://api.dicebear.com/7.x/miniavs/svg?seed=${i}`,
-    description:
-        'Ant Design, a design language for background applications, is refined by Ant UED Team.',
-    content:
-        'We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently.',
-    starCount: 0,
-    likeCount: 1,
-    commentCount: 2,
-}));
 
 const VideoManagement = () =>
 {
@@ -124,6 +105,7 @@ const VideoManagement = () =>
                             <List.Item
                                 key={item.title}
                                 actions={[
+                                    <IconText icon={PlayCircleOutlined} text={item.playCount + ""} key={"list-play-o-" + item.id} />,
                                     <IconText icon={StarOutlined} text={item.favoritesCount + ""} key={"list-star-o-" + item.id} />,
                                     <IconText icon={LikeOutlined} text={item.likeCount + ""} key={"list-like-o-" + item.id} />,
                                     <IconText icon={MessageOutlined} text={item.commentCount + ""} key={"list-message-" + item.id} />,
@@ -132,7 +114,7 @@ const VideoManagement = () =>
                             >
                                 <List.Item.Meta
                                     avatar={<Avatar src={item.coverUrl} />}
-                                    title={<a href={item.videoUrl}>{item.title}</a>}
+                                    title={<a href={`${RoutePaths.VideoPlayPage}?${RouteQueryParams.VideoId}=${item.id}`}>{item.title}</a>}
                                     description={item.introduction}
                                 />
                             </List.Item>
