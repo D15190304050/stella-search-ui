@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {VideoInfo} from "../../dtos/VideoInfo.ts";
-import {isNullOrUndefined} from "../../commons/Common.ts";
-import {message, Space, Spin} from "antd";
+import {Collapse, message, Space, Spin} from "antd";
 import {LikeOutlined, MessageOutlined, PlayCircleOutlined, StarOutlined} from "@ant-design/icons";
 import {useLocation, useNavigate} from "react-router-dom";
 import RouteQueryParams from "../../constants/RouteQueryParams.ts";
@@ -9,6 +8,8 @@ import axiosWithInterceptor from "../../axios/axios.tsx";
 import qs from "qs";
 import IconText from "../IconText";
 import VideoPlayer from "../VideoPlayer";
+
+const { Panel } = Collapse;
 
 const VideoPlayPage = () =>
 {
@@ -48,7 +49,8 @@ const VideoPlayPage = () =>
     return (
         <Spin spinning={loading}>
             <h1>{videoInfo?.title}</h1>
-            <Space>
+
+            <Space style={{marginBottom: "10px"}}>
                 <IconText icon={PlayCircleOutlined} text={videoInfo?.playCount + ""}/>
                 <IconText icon={StarOutlined} text={videoInfo?.favoritesCount + ""}/>
                 <IconText icon={LikeOutlined} text={videoInfo?.likeCount + ""}/>
@@ -57,7 +59,15 @@ const VideoPlayPage = () =>
             </Space>
 
             <VideoPlayer videoPlayUrl={videoInfo?.videoPlayUrl}/>
-            <p>Introduction: {videoInfo?.introduction}</p>
+
+            {/* Introduction. */}
+            <Collapse style={{textAlign: "left"}}>
+                <Panel header="Introduction" key="1">
+                    {videoInfo?.introduction}
+                </Panel>
+            </Collapse>
+
+
         </Spin>
     );
 }
