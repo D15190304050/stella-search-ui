@@ -92,7 +92,6 @@ const VideoInfoSetter = ({sourceVideoId}) =>
     const [videoUploadingOption, setVideoUploadingOption] = useState<VideoUploadingOption | null>(null);
     const [videoId, setVideoId] = useState(0);
     const [enableUploading, setEnableUploading] = useState(true);
-    const [fileList, setFileList] = useState([]);
 
     const [form] = Form.useForm();
     const navigate: NavigateFunction = useNavigate();
