@@ -11,9 +11,6 @@ import {VideoInfo} from "../../dtos/VideoInfo.ts";
 import RouteQueryParams from "../../constants/RouteQueryParams.ts";
 import IconText from "../IconText";
 
-const ColPush: number = 6;
-const ColSpan: number = 12;
-
 const VideoManagement = () =>
 {
     const navigate: NavigateFunction = useNavigate();
