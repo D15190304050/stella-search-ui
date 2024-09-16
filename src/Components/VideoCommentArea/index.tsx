@@ -5,8 +5,6 @@ import {useSelector} from "react-redux";
 import {LoginState} from "../../dtos/LoginState.ts";
 import axiosWithInterceptor, {jsonHeader} from "../../axios/axios.tsx";
 import qs from "qs";
-import {Simulate} from "react-dom/test-utils";
-import reset = Simulate.reset;
 
 const DefaultPageSize: number = 10;
 const { Paragraph } = Typography;
