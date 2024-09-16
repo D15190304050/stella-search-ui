@@ -100,7 +100,7 @@ const VideoManagement = () =>
                         dataSource={videoInfos}
                         renderItem={(item) => (
                             <List.Item
-                                key={item.title}
+                                key={item.id}
                                 actions={[
                                     <IconText icon={PlayCircleOutlined} text={item.playCount + ""} key={"list-play-o-" + item.id} />,
                                     <IconText icon={StarOutlined} text={item.favoritesCount + ""} key={"list-star-o-" + item.id} />,
