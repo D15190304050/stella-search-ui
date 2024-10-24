@@ -34,7 +34,7 @@ const Authenticated = ({ children }) =>
                 if (loginSuccess)
                     return;
 
-                // Step 2
+                // Step 2.
                 const loginRedirectUrl: string = AuthKeys.LoginUrl + "?" + AuthKeys.RedirectUrl + "=" + location.pathname.substring(1);
                 console.log("loginRedirectUrl = " + loginRedirectUrl);
                 navigate(loginRedirectUrl);
