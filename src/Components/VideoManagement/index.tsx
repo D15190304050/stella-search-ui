@@ -7,7 +7,7 @@ import RoutePaths from "../../constants/RoutePaths.ts";
 import axiosWithInterceptor from "../../axios/axios.tsx";
 import {PaginationParam} from "../../dtos/CommonQueryParams.ts";
 import qs from "qs";
-import {VideoInfo} from "../../dtos/VideoInfo.ts";
+import {VideoPlayInfo} from "../../dtos/VideoPlayInfo.ts";
 import RouteQueryParams from "../../constants/RouteQueryParams.ts";
 import IconText from "../IconText";
 
@@ -15,7 +15,7 @@ const VideoManagement = () =>
 {
     const navigate: NavigateFunction = useNavigate();
     const [videoCount, setVideoCount] = useState(25);
-    const [videoInfos, setVideoInfos] = useState<VideoInfo[]>([]);
+    const [videoInfos, setVideoInfos] = useState<VideoPlayInfo[]>([]);
 
     const jumpToUpload = () =>
     {
@@ -35,7 +35,7 @@ const VideoManagement = () =>
             paramsSerializer: params => qs.stringify(params)
         });
 
-        const videoInfos: VideoInfo[] = response.data.data;
+        const videoInfos: VideoPlayInfo[] = response.data.data;
         setVideoInfos(videoInfos);
     }
 

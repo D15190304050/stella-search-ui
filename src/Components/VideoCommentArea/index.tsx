@@ -114,7 +114,7 @@ const VideoCommentArea = ({videoId}) =>
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                 />
-                <Button type="primary" onClick={submitComment}>
+                <Button type="primary" onClick={submitComment} style={{marginTop: "5px"}}>
                     Submit
                 </Button>
             </div>

@@ -1,10 +1,17 @@
 import React, {useEffect, useState} from "react";
-import {VideoInfo} from "../../dtos/VideoInfo.ts";
+import {VideoBaseInfo, VideoPlayInfo} from "../../dtos/VideoPlayInfo.ts";
 import {Button, Col, Collapse, message, Row, Space, Spin} from "antd";
-import {LikeOutlined, MessageOutlined, PlayCircleOutlined, StarOutlined} from "@ant-design/icons";
+import {
+    LikeFilled,
+    LikeOutlined,
+    MessageOutlined,
+    PlayCircleOutlined,
+    StarFilled,
+    StarOutlined
+} from "@ant-design/icons";
 import {useLocation, useNavigate} from "react-router-dom";
 import RouteQueryParams from "../../constants/RouteQueryParams.ts";
-import axiosWithInterceptor from "../../axios/axios.tsx";
+import axiosWithInterceptor, {jsonHeader} from "../../axios/axios.tsx";
 import qs from "qs";
 import IconText from "../IconText";
 import VideoPlayer from "../VideoPlayer";
@@ -15,8 +22,10 @@ const { Panel } = Collapse;
 
 const VideoPlayPage = () =>
 {
-    const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
+    const [videoInfo, setVideoInfo] = useState<VideoPlayInfo | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [likeCount, setLikeCount] = useState(0);
+    const [favoriteCount, setFavoriteCount] = useState(0);
 
     const navigate = useNavigate();
 
@@ -30,6 +39,35 @@ const VideoPlayPage = () =>
             .then(x => navigate("/"));
     }
 
+    const changeLikeStatus = () =>
+    {
+        const videoBaseInfo: VideoBaseInfo = { videoId: videoId };
+        if (likeCount === 0)
+        {
+            axiosWithInterceptor.post("/api/video/like", videoBaseInfo, jsonHeader)
+                .then(response =>
+                {
+                    const success: boolean = response.data.data;
+                    if (success)
+                        setLikeCount(1);
+                    else
+                        message.error("Error updating like status: " + response.data.message);
+                })
+        }
+        else
+        {
+            axiosWithInterceptor.post("/api/video/cancel-like", videoBaseInfo, jsonHeader)
+                .then(response =>
+                {
+                    const success: boolean = response.data.data;
+                    if (success)
+                        setLikeCount(0);
+                    else
+                        message.error("Error updating like status: " + response.data.message);
+                })
+        }
+    }
+
     useEffect(() =>
     {
         (async () =>
@@ -40,9 +78,11 @@ const VideoPlayPage = () =>
                     paramsSerializer: params => qs.stringify(params)
                 });
 
-            const videoInfo: VideoInfo = videoInfoResponse.data.data;
+            const videoInfo: VideoPlayInfo = videoInfoResponse.data.data;
 
             setVideoInfo(videoInfo);
+            setLikeCount(videoInfo.likeCount);
+            setFavoriteCount(videoInfo.likeCount);
             setLoading(false);
         })();
     }, [videoId]);
@@ -74,15 +114,17 @@ const VideoPlayPage = () =>
                 marginTop: '10px',
             }}>
                 <Col>
-                    <Button>
-                        <LikeOutlined/>
+                    <Button onClick={changeLikeStatus}>
+                        {likeCount === 1 ? <LikeFilled/> : <LikeOutlined/>}
                     </Button>
                 </Col>
                 <Col span={1} style={{textAlign: "left", marginLeft: "10px"}}>
                     <span>{videoInfo?.likeCount + ""}</span>
                 </Col>
                 <Col>
-                    <Button><StarOutlined/></Button>
+                    <Button>
+                        {likeCount === 1 ? <StarFilled/> : <StarOutlined/>}
+                    </Button>
                 </Col>
                 <Col style={{textAlign: "left", marginLeft: "10px"}}>
                     <span>{videoInfo?.favoritesCount + ""}</span>

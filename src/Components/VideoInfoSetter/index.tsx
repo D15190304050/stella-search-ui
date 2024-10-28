@@ -10,7 +10,7 @@ import {
     ComposeVideoChunksRequest,
     NewVideoUploadingTaskRequest,
     SetVideoInfoRequest
-} from "../../dtos/VideoInfo.ts";
+} from "../../dtos/VideoPlayInfo.ts";
 import {VideoUploadingOption} from "../../dtos/VideoUploadingOptions.ts";
 import {useNavigate} from "react-router-dom";
 import {NavigateFunction} from "react-router/dist/lib/hooks";

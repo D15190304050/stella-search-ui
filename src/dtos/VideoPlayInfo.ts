@@ -1,4 +1,4 @@
-interface VideoInfo
+interface VideoPlayInfo
 {
     id: number,
     nameInOss: string,
@@ -12,6 +12,8 @@ interface VideoInfo
     likeCount: number,
     commentCount: number,
     videoPlayUrl: string,
+    userLikes: number,
+    userFavorites: number,
 }
 
 interface SetVideoInfoRequest
@@ -43,4 +45,17 @@ interface ComposeVideoChunksRequest
     videoUploadingTaskId: string,
 }
 
-export type {VideoInfo, SetVideoInfoRequest, NewVideoUploadingTaskRequest, VideoChunkUploadingRequest, ComposeVideoChunksRequest}
+interface VideoBaseInfo
+{
+    videoId: number;
+}
+
+export type
+{
+    VideoPlayInfo,
+    SetVideoInfoRequest,
+    NewVideoUploadingTaskRequest,
+    VideoChunkUploadingRequest,
+    ComposeVideoChunksRequest,
+    VideoBaseInfo
+}
