@@ -37,6 +37,10 @@ const GlobalLayout = ({children}) => {
             label: "Video uploading",
         },
         {
+            key: "3",
+            label: "Playlist",
+        },
+        {
             key: "10",
             label: "Log out",
         }
@@ -48,6 +52,9 @@ const GlobalLayout = ({children}) => {
         {
             case "2":
                 navigate(RoutePaths.VideoManagement);
+                break;
+            case "3":
+                navigate(RoutePaths.Playlist);
                 break;
             case "10":
                 logout(dispatch);

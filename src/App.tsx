@@ -8,6 +8,7 @@ import VideoUploading from "./Components/VideoUploading";
 import VideoUpdate from "./Components/VideoUpdate";
 import VideoPlayer from "./Components/VideoPlayer";
 import VideoPlayPage from "./Components/VideoPlayPage";
+import PlaylistPage from "./Components/PlaylistPage";
 
 function App()
 {
@@ -18,8 +19,8 @@ function App()
                 <Route path={RoutePaths.VideoManagement} element={<VideoManagement/>}/>
                 <Route path={RoutePaths.VideoUploading} element={<VideoUploading/>}/>
                 <Route path={RoutePaths.VideoUpdate} element={<VideoUpdate/>}/>
-                <Route path={RoutePaths.VideoPlayer} element={<VideoPlayer/>}/>
                 <Route path={RoutePaths.VideoPlayPage} element={<VideoPlayPage/>}/>
+                <Route path={RoutePaths.Playlist} element={<PlaylistPage/>}/>
             </Routes>
         </GlobalLayout>
     );

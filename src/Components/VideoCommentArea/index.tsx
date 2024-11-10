@@ -9,7 +9,7 @@ import qs from "qs";
 const DefaultPageSize: number = 10;
 const { Paragraph } = Typography;
 
-const VideoCommentArea = ({videoId}) =>
+const VideoCommentArea = ({videoId}: {videoId: number}) =>
 {
     const [newComment, setNewComment] = useState<string>("");
     const [commentCount, setCommentCount] = useState<number>(0);

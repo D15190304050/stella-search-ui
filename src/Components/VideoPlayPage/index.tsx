@@ -1,11 +1,11 @@
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {VideoBaseInfo, VideoPlayInfo} from "../../dtos/VideoPlayInfo.ts";
-import {Button, Col, Collapse, message, Row, Space, Spin} from "antd";
+import {Button, Checkbox, Col, Collapse, message, Modal, Row, Space, Spin, Tooltip} from "antd";
 import {
     LikeFilled,
     LikeOutlined,
     MessageOutlined,
-    PlayCircleOutlined,
+    PlayCircleOutlined, PlusOutlined,
     StarFilled,
     StarOutlined
 } from "@ant-design/icons";
@@ -16,23 +16,29 @@ import qs from "qs";
 import IconText from "../IconText";
 import VideoPlayer from "../VideoPlayer";
 import VideoCommentArea from "../VideoCommentArea";
-import {isNullOrUndefined} from "../../commons/Common.ts";
-
-const { Panel } = Collapse;
+import {PlaylistWithVideoCheck, SetVideoFavoritesRequest} from "../../dtos/Playlist.ts";
+import playlist from "../PlaylistPage";
+import PlaylistCreator from "../PlaylistCreator";
 
 const VideoPlayPage = () =>
 {
     const [videoInfo, setVideoInfo] = useState<VideoPlayInfo | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [likeCount, setLikeCount] = useState(0);
-    const [favoriteCount, setFavoriteCount] = useState(0);
+    const [likeCount, setLikeCount] = useState<number>(0);
+    const [favoriteCount, setFavoriteCount] = useState<number>(0);
+    const [currentUserLikes, setCurrentUserLikes] = useState<number>(0);
+    const [currentUserFavorites, setCurrentUserFavorites] = useState<number>(0);
+    const [playlists, setPlaylists] = useState<PlaylistWithVideoCheck[]>([]);
+    const [playlistModalVisible, setPlaylistModalVisible] = useState<boolean>(false);
+    const [openAddPlaylistModal, setOpenAddPlaylistModal] = useState<boolean>(false);
+    const [checkedPlaylistIds, setCheckedPlaylistIds] = useState<number[]>([]);
 
     const navigate = useNavigate();
 
     const location = useLocation();
     const queryParams: URLSearchParams = new URLSearchParams(location.search);
     const videoIdString: string | null = queryParams.get(RouteQueryParams.VideoId);
-    const videoId: number = parseInt(videoIdString);
+    const videoId: number = parseInt(videoIdString as string);
     if (isNaN(videoId))
     {
         message.error("Invalid video ID.")
@@ -42,14 +48,17 @@ const VideoPlayPage = () =>
     const changeLikeStatus = () =>
     {
         const videoBaseInfo: VideoBaseInfo = { videoId: videoId };
-        if (likeCount === 0)
+        if (currentUserLikes === 0)
         {
             axiosWithInterceptor.post("/api/video/like", videoBaseInfo, jsonHeader)
                 .then(response =>
                 {
                     const success: boolean = response.data.data;
                     if (success)
-                        setLikeCount(1);
+                    {
+                        setCurrentUserLikes(1);
+                        setLikeCount(likeCount + 1);
+                    }
                     else
                         message.error("Error updating like status: " + response.data.message);
                 })
@@ -61,11 +70,67 @@ const VideoPlayPage = () =>
                 {
                     const success: boolean = response.data.data;
                     if (success)
-                        setLikeCount(0);
+                    {
+                        setCurrentUserLikes(0);
+                        setLikeCount(likeCount - 1);
+                    }
                     else
                         message.error("Error updating like status: " + response.data.message);
                 })
         }
+    }
+
+    const openPlaylistModal = () =>
+    {
+        axiosWithInterceptor.get("/api/playlist/playlist-with-checks", {
+            params: {videoId},
+            paramsSerializer: params => qs.stringify(params)
+        })
+            .then(response =>
+            {
+                const playlistWithChecks: PlaylistWithVideoCheck[] = response.data.data;
+                setPlaylists(playlistWithChecks);
+                const checkedPlaylistIds: number[] = playlistWithChecks.filter(playlist => playlist.containsVideo).map(playlist => playlist.id);
+                setCheckedPlaylistIds(checkedPlaylistIds);
+                setPlaylistModalVisible(true);
+            });
+    }
+
+    const handleNewPlaylist = (newPlaylist: PlaylistWithVideoCheck) =>
+    {
+        setPlaylists([...playlists, newPlaylist]);
+    }
+
+    const closePlaylistModal = () =>
+    {
+        setPlaylistModalVisible(false);
+    }
+
+    const openNewPlaylistModal = () =>
+    {
+        setOpenAddPlaylistModal(true);
+    }
+
+    const setVideoFavorites = () =>
+    {
+        const request: SetVideoFavoritesRequest =
+            {
+                videoId: videoId,
+                playlistIds: checkedPlaylistIds,
+            };
+
+        axiosWithInterceptor.post("/api/playlist/set-favorites", request, jsonHeader)
+            .then(response =>
+            {
+                const success = response.data.success;
+                if (success)
+                {
+                    message.info("Successfully added into playlist(s).");
+                    setPlaylistModalVisible(false);
+                }
+                else
+                    message.error(response.data.message);
+            });
     }
 
     useEffect(() =>
@@ -82,13 +147,52 @@ const VideoPlayPage = () =>
 
             setVideoInfo(videoInfo);
             setLikeCount(videoInfo.likeCount);
-            setFavoriteCount(videoInfo.likeCount);
+            setFavoriteCount(videoInfo.favoritesCount);
             setLoading(false);
         })();
     }, [videoId]);
 
     return (
         <Spin spinning={loading}>
+            <Modal
+                open={playlistModalVisible}
+                title="Add to favorite playlists"
+                onCancel={closePlaylistModal}
+                onOk={setVideoFavorites}
+            >
+                <PlaylistCreator
+                    handleNewPlaylist={handleNewPlaylist}
+                    openAddPlaylistModal={openAddPlaylistModal}
+                    setOpenAddPlaylistModal={setOpenAddPlaylistModal}
+                />
+                <Checkbox.Group
+                    defaultValue=
+                        {
+                            playlists
+                                .filter(playlist => playlist.containsVideo)
+                                .map(playlist => (playlist.id))
+                        }
+                    onChange={setCheckedPlaylistIds}
+                >
+                    <Row>
+                        {playlists.map(playlist => (
+                            <Col span={24} key={playlist.id}>
+                                <Tooltip title={playlist.description}>
+                                    <Checkbox value={playlist.id}>{playlist.name}</Checkbox>
+                                </Tooltip>
+                            </Col>
+                        ))}
+                    </Row>
+                </Checkbox.Group>
+
+                <Row>
+                    <Button onClick={openNewPlaylistModal}>
+                        <PlusOutlined/>
+                        Create new playlist
+                    </Button>
+                </Row>
+            </Modal>
+
             <h1>{videoInfo?.title}</h1>
 
             <Space style={{marginBottom: "10px"}}>
@@ -115,19 +219,19 @@ const VideoPlayPage = () =>
             }}>
                 <Col>
                     <Button onClick={changeLikeStatus}>
-                        {likeCount === 1 ? <LikeFilled/> : <LikeOutlined/>}
+                        {currentUserLikes === 1 ? <LikeFilled/> : <LikeOutlined/>}
                     </Button>
                 </Col>
                 <Col span={1} style={{textAlign: "left", marginLeft: "10px"}}>
-                    <span>{videoInfo?.likeCount + ""}</span>
+                    <span>{likeCount}</span>
                 </Col>
                 <Col>
-                    <Button>
-                        {likeCount === 1 ? <StarFilled/> : <StarOutlined/>}
+                    <Button onClick={openPlaylistModal}>
+                        {currentUserFavorites === 1 ? <StarFilled/> : <StarOutlined/>}
                     </Button>
                 </Col>
                 <Col style={{textAlign: "left", marginLeft: "10px"}}>
-                    <span>{videoInfo?.favoritesCount + ""}</span>
+                    <span>{favoriteCount}</span>
                 </Col>
             </Row>
 
