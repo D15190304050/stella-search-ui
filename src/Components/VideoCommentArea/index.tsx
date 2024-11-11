@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {List, Avatar, Input, Button, Typography, message, Col, Pagination, Row} from 'antd';
 import {AddCommentsRequest, GetVideoCommentsRequest, VideoComment} from "../../dtos/VideoComment.ts";
 import {useSelector} from "react-redux";
@@ -113,7 +113,10 @@ const VideoCommentArea = ({videoId}: {videoId: number}) =>
                     placeholder="Write a comment..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
+                    maxLength={500}
+                    autoSize={{minRows: 2, maxRows: 10}}
                 />
+                <p style={{textAlign: "right"}}>{newComment.length}/500</p>
                 <Button type="primary" onClick={submitComment} style={{marginTop: "5px"}}>
                     Submit
                 </Button>

@@ -17,7 +17,6 @@ import IconText from "../IconText";
 import VideoPlayer from "../VideoPlayer";
 import VideoCommentArea from "../VideoCommentArea";
 import {PlaylistWithVideoCheck, SetVideoFavoritesRequest} from "../../dtos/Playlist.ts";
-import playlist from "../PlaylistPage";
 import PlaylistCreator from "../PlaylistCreator";
 
 const VideoPlayPage = () =>
@@ -26,8 +25,8 @@ const VideoPlayPage = () =>
     const [loading, setLoading] = useState<boolean>(true);
     const [likeCount, setLikeCount] = useState<number>(0);
     const [favoriteCount, setFavoriteCount] = useState<number>(0);
-    const [currentUserLikes, setCurrentUserLikes] = useState<number>(0);
-    const [currentUserFavorites, setCurrentUserFavorites] = useState<number>(0);
+    const [currentUserLikes, setCurrentUserLikes] = useState<boolean>(false);
+    const [currentUserFavorites, setCurrentUserFavorites] = useState<boolean>(false);
     const [playlists, setPlaylists] = useState<PlaylistWithVideoCheck[]>([]);
     const [playlistModalVisible, setPlaylistModalVisible] = useState<boolean>(false);
     const [openAddPlaylistModal, setOpenAddPlaylistModal] = useState<boolean>(false);
@@ -48,7 +47,7 @@ const VideoPlayPage = () =>
     const changeLikeStatus = () =>
     {
         const videoBaseInfo: VideoBaseInfo = { videoId: videoId };
-        if (currentUserLikes === 0)
+        if (!currentUserLikes)
         {
             axiosWithInterceptor.post("/api/video/like", videoBaseInfo, jsonHeader)
                 .then(response =>
@@ -56,7 +55,7 @@ const VideoPlayPage = () =>
                     const success: boolean = response.data.data;
                     if (success)
                     {
-                        setCurrentUserLikes(1);
+                        setCurrentUserLikes(true);
                         setLikeCount(likeCount + 1);
                     }
                     else
@@ -71,7 +70,7 @@ const VideoPlayPage = () =>
                     const success: boolean = response.data.data;
                     if (success)
                     {
-                        setCurrentUserLikes(0);
+                        setCurrentUserLikes(false);
                         setLikeCount(likeCount - 1);
                     }
                     else
@@ -127,6 +126,18 @@ const VideoPlayPage = () =>
                 {
                     message.info("Successfully added into playlist(s).");
                     setPlaylistModalVisible(false);
+
+                    // Set favorite count.
+                    // If the current user favored it before, and do not favor it now, decrease favorite count.
+                    // If the current user did not favor it before, and favorite it now, increase favorite count.
+                    if (currentUserFavorites && checkedPlaylistIds.length === 0)
+                        setFavoriteCount(favoriteCount - 1);
+                    else if (!currentUserFavorites && checkedPlaylistIds.length > 0)
+                        setFavoriteCount(favoriteCount + 1);
+
+                    setCurrentUserFavorites(checkedPlaylistIds.length > 0);
+
+
                 }
                 else
                     message.error(response.data.message);
@@ -148,6 +159,8 @@ const VideoPlayPage = () =>
             setVideoInfo(videoInfo);
             setLikeCount(videoInfo.likeCount);
             setFavoriteCount(videoInfo.favoritesCount);
+            setCurrentUserLikes(videoInfo.userLikes);
+            setCurrentUserFavorites(videoInfo.userFavorites);
             setLoading(false);
         })();
     }, [videoId]);
@@ -219,7 +232,7 @@ const VideoPlayPage = () =>
             }}>
                 <Col>
                     <Button onClick={changeLikeStatus}>
-                        {currentUserLikes === 1 ? <LikeFilled/> : <LikeOutlined/>}
+                        {currentUserLikes ? <LikeFilled/> : <LikeOutlined/>}
                     </Button>
                 </Col>
                 <Col span={1} style={{textAlign: "left", marginLeft: "10px"}}>
@@ -227,7 +240,7 @@ const VideoPlayPage = () =>
                 </Col>
                 <Col>
                     <Button onClick={openPlaylistModal}>
-                        {currentUserFavorites === 1 ? <StarFilled/> : <StarOutlined/>}
+                        {currentUserFavorites ? <StarFilled/> : <StarOutlined/>}
                     </Button>
                 </Col>
                 <Col style={{textAlign: "left", marginLeft: "10px"}}>

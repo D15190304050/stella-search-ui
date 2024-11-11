@@ -12,8 +12,8 @@ interface VideoPlayInfo
     likeCount: number,
     commentCount: number,
     videoPlayUrl: string,
-    userLikes: number,
-    userFavorites: number,
+    userLikes: boolean,
+    userFavorites: boolean,
 }
 
 interface SetVideoInfoRequest
