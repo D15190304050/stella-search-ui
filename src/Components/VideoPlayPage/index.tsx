@@ -136,8 +136,6 @@ const VideoPlayPage = () =>
                         setFavoriteCount(favoriteCount + 1);
 
                     setCurrentUserFavorites(checkedPlaylistIds.length > 0);
-
-
                 }
                 else
                     message.error(response.data.message);

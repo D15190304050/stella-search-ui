@@ -50,6 +50,8 @@ const PlaylistCreator = ({handleNewPlaylist, openAddPlaylistModal, setOpenAddPla
         >
             <Form
                 form={form}
+                labelCol={{ span: 6 }}
+                wrapperCol={{ span: 18 }}
             >
                 <Form.Item
                     label="Name"
