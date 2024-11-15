@@ -14,7 +14,7 @@ import IconText from "../IconText";
 const VideoManagement = () =>
 {
     const navigate: NavigateFunction = useNavigate();
-    const [videoCount, setVideoCount] = useState(25);
+    const [videoCount, setVideoCount] = useState<number>(25);
     const [videoInfos, setVideoInfos] = useState<VideoPlayInfo[]>([]);
 
     const jumpToUpload = () =>

@@ -29,7 +29,7 @@ const PlaylistPage = () =>
     const [openDeletePlaylistModal, setOpenDeletePlaylistModal] = useState<boolean>(false);
     const [videoCountInPlaylist, setVideoCountInPlaylist] = useState<number>(0);
     const [videoPlayInfos, setVideoPlayInfos] = useState<VideoPlayInfo[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const [editPlaylistForm] = Form.useForm();
 

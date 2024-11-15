@@ -8,8 +8,7 @@ import {useEffect, useState} from "react";
 
 const VideoUpdate = () =>
 {
-    const [enabled, setEnabled] = useState(false);
-    // const [sourceVideoId, setSourceVideoId] = useState(0);
+    const [enabled, setEnabled] = useState<boolean>(false);
 
     const location = useLocation();
     const navigate: NavigateFunction = useNavigate();
@@ -17,16 +16,26 @@ const VideoUpdate = () =>
     const queryParams: URLSearchParams = new URLSearchParams(location.search);
     const videoId: string | null = queryParams.get(RouteQueryParams.VideoId);
 
-    const sourceVideoId = parseInt(videoId);
+    const noVideoId: boolean = (videoId === null);
+    const sourceVideoId: number = noVideoId ?  -1 : parseInt(videoId as string);
+
+    const showErrorVideoId = () =>
+    {
+        message.error("Invalid video ID.")
+            .then(x => navigate("/"));
+    }
+
     useEffect(() =>
     {
-        if (isNaN(sourceVideoId))
-        {
-            message.error("Invalid video ID.")
-                .then(x => navigate("/"));
-        }
+        if (noVideoId)
+            showErrorVideoId();
         else
-            setEnabled(true);
+        {
+            if (isNaN(sourceVideoId))
+                showErrorVideoId();
+            else
+                setEnabled(true);
+        }
     }, []);
 
     return enabled ? (<VideoInfoSetter sourceVideoId={sourceVideoId}/>) : <div></div>;

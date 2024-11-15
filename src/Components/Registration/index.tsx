@@ -77,11 +77,11 @@ const beforeUploadAvatar = (file) => {
 };
 
 const Registration = () => {
-    const [loadingOfRegistration, setLoadingOfRegistration] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loadingOfRegistration, setLoadingOfRegistration] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
     const [imageUrl, setImageUrl] = useState<string>();
-    const [captchaId, setCaptchaId] = useState("");
-    const [captchaUrl, setCaptchaUrl] = useState("");
+    const [captchaId, setCaptchaId] = useState<string>("");
+    const [captchaUrl, setCaptchaUrl] = useState<string>("");
 
     const navigate = useNavigate();
 

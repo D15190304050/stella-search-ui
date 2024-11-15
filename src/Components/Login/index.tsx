@@ -14,7 +14,7 @@ import {isNullOrUndefined} from "../../commons/Common.ts";
 const Login = () => {
     const location = useLocation();
     const cookies = new Cookies();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const navigate: NavigateFunction = useNavigate();
 

@@ -87,11 +87,11 @@ const getBase64 = (img: FileType, callback: (url: string) => void) => {
 
 const VideoInfoSetter = ({sourceVideoId}) =>
 {
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [videoCoverUrl, setVideoCoverUrl] = useState<string | null>(null);
     const [videoUploadingOption, setVideoUploadingOption] = useState<VideoUploadingOption | null>(null);
-    const [videoId, setVideoId] = useState(0);
-    const [enableUploading, setEnableUploading] = useState(true);
+    const [videoId, setVideoId] = useState<number>(0);
+    const [enableUploading, setEnableUploading] = useState<boolean>(true);
 
     const [form] = Form.useForm();
     const navigate: NavigateFunction = useNavigate();
