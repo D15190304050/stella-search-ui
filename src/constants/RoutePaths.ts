@@ -6,6 +6,7 @@ const RoutePaths =
     VideoUpdate: "/update",
     VideoPlayPage: "/video",
     Playlist: "/playlist",
+    Follow: "/follow",
 };
 
 export default RoutePaths;

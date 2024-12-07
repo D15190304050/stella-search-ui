@@ -9,6 +9,7 @@ import VideoUpdate from "./Components/VideoUpdate";
 import VideoPlayer from "./Components/VideoPlayer";
 import VideoPlayPage from "./Components/VideoPlayPage";
 import PlaylistPage from "./Components/PlaylistPage";
+import FollowingAndFollowerPage from "./Components/FollowingAndFollowerPage";
 
 function App()
 {
@@ -21,6 +22,7 @@ function App()
                 <Route path={RoutePaths.VideoUpdate} element={<VideoUpdate/>}/>
                 <Route path={RoutePaths.VideoPlayPage} element={<VideoPlayPage/>}/>
                 <Route path={RoutePaths.Playlist} element={<PlaylistPage/>}/>
+                <Route path={RoutePaths.Follow} element={<FollowingAndFollowerPage/>}/>
             </Routes>
         </GlobalLayout>
     );

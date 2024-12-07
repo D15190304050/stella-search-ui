@@ -41,6 +41,10 @@ const GlobalLayout = ({children}) => {
             label: "Playlist",
         },
         {
+            key: "4",
+            label: "Followings and followers",
+        },
+        {
             key: "10",
             label: "Log out",
         }
@@ -55,6 +59,9 @@ const GlobalLayout = ({children}) => {
                 break;
             case "3":
                 navigate(RoutePaths.Playlist);
+                break;
+            case "4":
+                navigate(RoutePaths.Follow)
                 break;
             case "10":
                 logout(dispatch);
