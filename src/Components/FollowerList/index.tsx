@@ -1,9 +1,7 @@
 import {Avatar, Button, List, message, Pagination, Spin, Tooltip} from "antd";
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {
-    convertToUserFollowingInfoWithState,
     UserFollowingInfo,
-    UserFollowingInfoWithState
 } from "../../dtos/FollowInfo.ts";
 import axiosWithInterceptor, {jsonHeader} from "../../axios/axios.tsx";
 import qs from "qs";
@@ -14,14 +12,14 @@ const FollowerList = ({defaultPageSize}: { defaultPageSize: number }) =>
     const [pageIndex, setPageIndex] = useState<number>(1);
     const [totalFollowings, setTotalFollowings] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
-    const [followers, setFollowers] = useState<UserFollowingInfoWithState[]>([]);
+    const [followers, setFollowers] = useState<UserFollowingInfo[]>([]);
 
     const setFollowState = (userId: number): void =>
     {
-        const userFollowingInfo: UserFollowingInfoWithState = followers.filter(x => x.userId === userId)[0];
+        const userFollowingInfo: UserFollowingInfo = followers.filter(x => x.userId === userId)[0];
         const nextFollowState: boolean = !userFollowingInfo.followState;
 
-        const updatedFollowingInfo: UserFollowingInfoWithState[] = followers.map(user =>
+        const updatedFollowingInfo: UserFollowingInfo[] = followers.map(user =>
             user.userId === userId ?
                 {...user, followState: !user.followState} :
                 user
@@ -46,9 +44,9 @@ const FollowerList = ({defaultPageSize}: { defaultPageSize: number }) =>
         }
     }
 
-    const onPageChange = (page: number, pageSize: number) => getFollowingUsers(page, pageSize);
+    const onPageChange = (page: number, pageSize: number) => getFollowers(page, pageSize);
 
-    const getFollowingUsers = (page: number, pageSize: number) =>
+    const getFollowers = (page: number, pageSize: number) =>
     {
         setLoading(true);
         setPageIndex(page);
@@ -64,9 +62,8 @@ const FollowerList = ({defaultPageSize}: { defaultPageSize: number }) =>
         })
             .then(response =>
             {
-                const followingUsers: UserFollowingInfo[] = response.data.data.data;
-                const followingUsersWithState: UserFollowingInfoWithState[] = followingUsers.map(x => convertToUserFollowingInfoWithState(x));
-                setFollowers(followingUsersWithState);
+                const followers: UserFollowingInfo[] = response.data.data.data;
+                setFollowers(followers);
 
                 setTotalFollowings(response.data.data.total);
 
@@ -76,7 +73,7 @@ const FollowerList = ({defaultPageSize}: { defaultPageSize: number }) =>
 
     useEffect(() =>
     {
-        getFollowingUsers(1, defaultPageSize);
+        getFollowers(1, defaultPageSize);
     }, []);
 
     return (

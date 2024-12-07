@@ -1,5 +1,4 @@
 import {JSX} from "react";
-import {PaginationParam} from "./CommonQueryParams.ts";
 
 interface FollowCount
 {
@@ -21,20 +20,7 @@ interface UserFollowingInfo
     nickname: string;
     avatarUrl: string;
     followingTime: Date;
-}
-
-interface UserFollowingInfoWithState extends UserFollowingInfo
-{
     followState: boolean;
 }
 
-export const convertToUserFollowingInfoWithState = (userFollowingInfo: UserFollowingInfo) =>
-{
-    return {
-        ...userFollowingInfo,
-        followState: true,
-    };
-}
-
-
-export type {FollowCount, FollowMenuItem, UserFollowingInfo, UserFollowingInfoWithState}
+export type {FollowCount, FollowMenuItem, UserFollowingInfo}

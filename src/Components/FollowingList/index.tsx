@@ -1,9 +1,7 @@
 import {Avatar, Button, List, message, Pagination, Spin, Tooltip} from "antd";
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {
-    convertToUserFollowingInfoWithState,
     UserFollowingInfo,
-    UserFollowingInfoWithState
 } from "../../dtos/FollowInfo.ts";
 import axiosWithInterceptor, {jsonHeader} from "../../axios/axios.tsx";
 import qs from "qs";
@@ -14,19 +12,19 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
     const [pageIndex, setPageIndex] = useState<number>(1);
     const [totalFollowings, setTotalFollowings] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
-    const [followingUsers, setFollowingUsers] = useState<UserFollowingInfoWithState[]>([]);
+    const [followings, setFollowings] = useState<UserFollowingInfo[]>([]);
 
     const setFollowState = (userId: number): void =>
     {
-        const userFollowingInfo: UserFollowingInfoWithState = followingUsers.filter(x => x.userId === userId)[0];
+        const userFollowingInfo: UserFollowingInfo = followings.filter(x => x.userId === userId)[0];
         const nextFollowState: boolean = !userFollowingInfo.followState;
 
-        const updatedFollowingInfo: UserFollowingInfoWithState[] = followingUsers.map(user =>
+        const updatedFollowingInfo: UserFollowingInfo[] = followings.map(user =>
             user.userId === userId ?
-                {...user, followState: !user.followState} :
+                {...user, followState: nextFollowState} :
                 user
         );
-        setFollowingUsers(updatedFollowingInfo);
+        setFollowings(updatedFollowingInfo);
 
         if (nextFollowState)
         {
@@ -46,9 +44,9 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
         }
     }
 
-    const onPageChange = (page: number, pageSize: number) => getFollowingUsers(page, pageSize);
+    const onPageChange = (page: number, pageSize: number) => getFollowings(page, pageSize);
 
-    const getFollowingUsers = (page: number, pageSize: number) =>
+    const getFollowings = (page: number, pageSize: number) =>
     {
         setLoading(true);
         setPageIndex(page);
@@ -64,9 +62,8 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
         })
             .then(response =>
             {
-                const followingUsers: UserFollowingInfo[] = response.data.data.data;
-                const followingUsersWithState: UserFollowingInfoWithState[] = followingUsers.map(x => convertToUserFollowingInfoWithState(x));
-                setFollowingUsers(followingUsersWithState);
+                const followings: UserFollowingInfo[] = response.data.data.data;
+                setFollowings(followings);
 
                 setTotalFollowings(response.data.data.total);
 
@@ -76,7 +73,7 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
 
     useEffect(() =>
     {
-        getFollowingUsers(1, defaultPageSize);
+        getFollowings(1, defaultPageSize);
     }, []);
 
     return (
@@ -85,7 +82,7 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
                 style={{textAlign: "left"}}
                 itemLayout="horizontal"
                 size="large"
-                dataSource={followingUsers}
+                dataSource={followings}
                 renderItem={(item) => (
                     <List.Item
                         key={item.userId}
