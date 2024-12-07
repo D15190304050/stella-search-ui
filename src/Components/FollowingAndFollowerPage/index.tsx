@@ -1,17 +1,17 @@
-import {Layout, Menu, Pagination, Spin} from "antd";
-import React, {useEffect, useState} from "react";
-import {FolderOpenFilled, TeamOutlined, UserOutlined} from "@ant-design/icons";
-import {FollowCount, FollowMenuItem} from "../../dtos/FollowInfo.ts";
+import {Layout, Menu} from "antd";
+import {useEffect, useState} from "react";
+import {TeamOutlined, UserOutlined} from "@ant-design/icons";
+import {FollowMenuItem, UserFollowCount} from "../../dtos/FollowInfo.ts";
 import FollowInfoList from "../FollowInfoList";
 import FollowType from "../../constants/FollowType.ts";
+import axiosWithInterceptor from "../../axios/axios.tsx";
 
 const DefaultPageSize: number = 20;
 const { Sider, Content } = Layout;
 
 const FollowingAndFollowerPage = () =>
 {
-    const [followCount, setFollowCount] = useState<FollowCount>({followingCount: 0, followerCount: 0});
-
+    const [followCount, setFollowCount] = useState<UserFollowCount>({followingCount: 0, followerCount: 0});
     const [currentFollowMenuKey, setCurrentFollowMenuKey] = useState<string>(FollowType.Followings);
 
     const followMenuItems: FollowMenuItem[] = [
@@ -49,7 +49,12 @@ const FollowingAndFollowerPage = () =>
 
     useEffect(() =>
     {
-
+        axiosWithInterceptor.get("/api/user-following/follow-count")
+            .then(response =>
+            {
+                const userFollowCount: UserFollowCount = response.data.data;
+                setFollowCount(userFollowCount);
+            });
     }, [currentFollowMenuKey]);
 
     return (

@@ -1,11 +1,5 @@
 import {JSX} from "react";
 
-interface FollowCount
-{
-    followingCount: number;
-    followerCount: number;
-}
-
 interface FollowMenuItem
 {
     key: string,
@@ -23,4 +17,10 @@ interface UserFollowingInfo
     followState: boolean;
 }
 
-export type {FollowCount, FollowMenuItem, UserFollowingInfo}
+interface UserFollowCount
+{
+    followingCount: number,
+    followerCount: number,
+}
+
+export type {FollowMenuItem, UserFollowingInfo, UserFollowCount}
