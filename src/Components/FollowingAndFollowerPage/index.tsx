@@ -2,29 +2,27 @@ import {Layout, Menu, Pagination, Spin} from "antd";
 import React, {useEffect, useState} from "react";
 import {FolderOpenFilled, TeamOutlined, UserOutlined} from "@ant-design/icons";
 import {FollowCount, FollowMenuItem} from "../../dtos/FollowInfo.ts";
-import FollowingList from "../FollowingList";
-import FollowerList from "../FollowerList";
+import FollowInfoList from "../FollowInfoList";
+import FollowType from "../../constants/FollowType.ts";
 
 const DefaultPageSize: number = 20;
-const KeyFollowing: string = "Followings";
-const KeyFollower: string = "Followers";
 const { Sider, Content } = Layout;
 
 const FollowingAndFollowerPage = () =>
 {
     const [followCount, setFollowCount] = useState<FollowCount>({followingCount: 0, followerCount: 0});
 
-    const [currentFollowMenuKey, setCurrentFollowMenuKey] = useState<string>(KeyFollowing);
+    const [currentFollowMenuKey, setCurrentFollowMenuKey] = useState<string>(FollowType.Followings);
 
     const followMenuItems: FollowMenuItem[] = [
         {
-            key: KeyFollowing,
+            key: FollowType.Followings,
             icon: <UserOutlined />,
             title: "My followings",
             count: followCount.followingCount
         },
         {
-            key: KeyFollower,
+            key: FollowType.Followers,
             icon: <TeamOutlined />,
             title: "My followers",
             count: followCount.followerCount
@@ -52,7 +50,7 @@ const FollowingAndFollowerPage = () =>
     useEffect(() =>
     {
 
-    }, []);
+    }, [currentFollowMenuKey]);
 
     return (
         <div>
@@ -74,11 +72,7 @@ const FollowingAndFollowerPage = () =>
                     />
                 </Sider>
                 <Content style={{margin: '24px 16px', padding: 24, background: '#fff', minHeight: 360}}>
-                    {
-                        currentFollowMenuKey === KeyFollowing
-                            ? <FollowingList defaultPageSize={DefaultPageSize}/>
-                            : <FollowerList defaultPageSize={DefaultPageSize}/>
-                    }
+                    <FollowInfoList defaultPageSize={DefaultPageSize} followType={currentFollowMenuKey}/>
                 </Content>
             </Layout>
         </div>

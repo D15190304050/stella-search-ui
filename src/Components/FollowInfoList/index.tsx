@@ -1,30 +1,35 @@
 import {Avatar, Button, List, message, Pagination, Spin, Tooltip} from "antd";
 import {useEffect, useState} from "react";
-import {
-    UserFollowingInfo,
-} from "../../dtos/FollowInfo.ts";
+import {UserFollowingInfo} from "../../dtos/FollowInfo.ts";
 import axiosWithInterceptor, {jsonHeader} from "../../axios/axios.tsx";
 import qs from "qs";
-import {PaginationParam} from "../../dtos/CommonQueryParams.ts";
+import {PaginationParam} from "../../dtos/CommonQueryParams.ts"
+import FollowType from "../../constants/FollowType.ts";
 
-const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
+const UrlToGetFollowings: string = "/api/user-following/followings";
+const UrlToGetFollowers: string = "/api/user-following/followers";
+const TotalFollowings: string = "Total followings";
+const TotalFollowers: string = "Total followers";
+
+const FollowInfoList = ({defaultPageSize, followType}:
+                            { defaultPageSize: number, followType: string }) =>
 {
     const [pageIndex, setPageIndex] = useState<number>(1);
     const [totalFollowings, setTotalFollowings] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
-    const [followings, setFollowings] = useState<UserFollowingInfo[]>([]);
+    const [followingInfos, setFollowingInfos] = useState<UserFollowingInfo[]>([]);
 
     const setFollowState = (userId: number): void =>
     {
-        const userFollowingInfo: UserFollowingInfo = followings.filter(x => x.userId === userId)[0];
+        const userFollowingInfo: UserFollowingInfo = followingInfos.filter(x => x.userId === userId)[0];
         const nextFollowState: boolean = !userFollowingInfo.followState;
 
-        const updatedFollowingInfo: UserFollowingInfo[] = followings.map(user =>
+        const updatedFollowingInfo: UserFollowingInfo[] = followingInfos.map(user =>
             user.userId === userId ?
                 {...user, followState: nextFollowState} :
                 user
         );
-        setFollowings(updatedFollowingInfo);
+        setFollowingInfos(updatedFollowingInfo);
 
         if (nextFollowState)
         {
@@ -44,9 +49,9 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
         }
     }
 
-    const onPageChange = (page: number, pageSize: number) => getFollowings(page, pageSize);
+    const onPageChange = (page: number, pageSize: number) => getFollowInfos(page, pageSize);
 
-    const getFollowings = (page: number, pageSize: number) =>
+    const getFollowInfos = (page: number, pageSize: number) =>
     {
         setLoading(true);
         setPageIndex(page);
@@ -56,14 +61,15 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
                 pageCapacity: pageSize,
             };
 
-        axiosWithInterceptor.get("/api/user-following/followings", {
+        const urlToGetFollowInfos: string = followType === FollowType.Followers ? UrlToGetFollowers : UrlToGetFollowings;
+        axiosWithInterceptor.get(urlToGetFollowInfos, {
             params: followInfoRequest,
             paramsSerializer: params => qs.stringify(params)
         })
             .then(response =>
             {
-                const followings: UserFollowingInfo[] = response.data.data.data;
-                setFollowings(followings);
+                const followers: UserFollowingInfo[] = response.data.data.data;
+                setFollowingInfos(followers);
 
                 setTotalFollowings(response.data.data.total);
 
@@ -71,10 +77,16 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
             });
     }
 
+    const getFollowInfoTotal = () =>
+    {
+        return followType === FollowType.Followings ? TotalFollowings : TotalFollowers;
+    }
+
     useEffect(() =>
     {
-        getFollowings(1, defaultPageSize);
-    }, []);
+        console.log("followType = " + followType);
+        getFollowInfos(1, defaultPageSize);
+    }, [followType]);
 
     return (
         <Spin spinning={loading} size="large" tip="Loading..." delay={500}>
@@ -82,7 +94,7 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
                 style={{textAlign: "left"}}
                 itemLayout="horizontal"
                 size="large"
-                dataSource={followings}
+                dataSource={followingInfos}
                 renderItem={(item) => (
                     <List.Item
                         key={item.userId}
@@ -110,7 +122,7 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
                 current={pageIndex}
                 total={totalFollowings}
                 showQuickJumper
-                showTotal={(total) => `Total followings: ${total}`}
+                showTotal={(total) => `${(getFollowInfoTotal())}: ${total}`}
                 onChange={onPageChange}
                 defaultPageSize={defaultPageSize}
             />
@@ -118,4 +130,4 @@ const FollowingList = ({defaultPageSize}: { defaultPageSize: number }) =>
     );
 }
 
-export default FollowingList;
+export default FollowInfoList;
