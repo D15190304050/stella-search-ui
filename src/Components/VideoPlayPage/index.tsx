@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {VideoBaseInfo, VideoPlayInfo} from "../../dtos/VideoPlayInfo.ts";
-import {Button, Checkbox, Col, Collapse, message, Modal, Row, Space, Spin, Tooltip} from "antd";
+import {Button, Checkbox, Col, Collapse, message, Modal, Row, Space, Spin, Tooltip, Popover } from "antd";
 import {
     LikeFilled,
     LikeOutlined,
@@ -18,6 +18,7 @@ import VideoPlayer from "../VideoPlayer";
 import VideoCommentArea from "../VideoCommentArea";
 import {PlaylistWithVideoCheck, SetVideoFavoritesRequest} from "../../dtos/Playlist.ts";
 import PlaylistCreator from "../PlaylistCreator";
+import {TranscriptSummary} from "../../dtos/TranscriptSummary.ts";
 
 const VideoPlayPage = () =>
 {
@@ -31,6 +32,7 @@ const VideoPlayPage = () =>
     const [playlistModalVisible, setPlaylistModalVisible] = useState<boolean>(false);
     const [openAddPlaylistModal, setOpenAddPlaylistModal] = useState<boolean>(false);
     const [checkedPlaylistIds, setCheckedPlaylistIds] = useState<number[]>([]);
+    const [summary, setSummary] = useState<TranscriptSummary | null>(null);
 
     const navigate = useNavigate();
 
@@ -142,6 +144,37 @@ const VideoPlayPage = () =>
             });
     }
 
+    const getSummary = () =>
+    {
+        axiosWithInterceptor.get("/api/video/summary", {
+            params: {videoId: videoId},
+            paramsSerializer: params => qs.stringify(params)
+        }).then(response =>
+        {
+            if (response.data.success)
+                setSummary(response.data.data);
+            else
+                message.error(response.data.message);
+        });
+    }
+
+    const setSummaryContent = () =>
+    {
+        if (summary === null)
+            return (<div>There is no summary for this video.</div>);
+        else
+        {
+            let keyId: number = 1;
+            const innerDivs = summary.summary.replaceAll("\"", "").split("\n").map(x =>
+            {
+                return (<div key={keyId++}>{x}</div>);
+            });
+            return (
+                <div>{innerDivs}</div>
+            );
+        }
+    }
+
     useEffect(() =>
     {
         (async () =>
@@ -159,6 +192,7 @@ const VideoPlayPage = () =>
             setFavoriteCount(videoInfo.favoritesCount);
             setCurrentUserLikes(videoInfo.userLikes);
             setCurrentUserFavorites(videoInfo.userFavorites);
+            getSummary();
             setLoading(false);
         })();
     }, [videoId]);
@@ -233,7 +267,7 @@ const VideoPlayPage = () =>
                         {currentUserLikes ? <LikeFilled/> : <LikeOutlined/>}
                     </Button>
                 </Col>
-                <Col span={1} style={{textAlign: "left", marginLeft: "10px"}}>
+                <Col style={{textAlign: "left", marginLeft: "10px"}}>
                     <span>{likeCount}</span>
                 </Col>
                 <Col>
@@ -243,6 +277,11 @@ const VideoPlayPage = () =>
                 </Col>
                 <Col style={{textAlign: "left", marginLeft: "10px"}}>
                     <span>{favoriteCount}</span>
+                </Col>
+                <Col span={20} style={{textAlign: "right"}}>
+                    <Popover content={setSummaryContent()} title="Summary" trigger="click">
+                        <Button>Show summary</Button>
+                    </Popover>
                 </Col>
             </Row>
 
